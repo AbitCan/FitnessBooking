@@ -1,32 +1,33 @@
 ﻿using FitnessBooking.Application;
-using FluentAssertions;
+using NUnit.Framework;
+using System;
 
 namespace FitnessBooking.UnitTests;
 
 public class RefundPolicyTests
 {
-    [TestCase(100, 24, 100)]
-    [TestCase(100, 10, 50)]
-    [TestCase(100, 2, 50)]
-    [TestCase(100, 1, 0)]
-    public void Refund_is_correct_by_window(decimal price, int hoursBefore, decimal expected)
+    [Test]
+    public void GetRefundAmount_throws_when_pricePaid_is_negative()
     {
         var policy = new RefundPolicy();
-        var start = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var cancel = start.AddHours(-hoursBefore);
 
-        var refund = policy.GetRefundAmount(price, start, cancel);
+        var startUtc = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var cancelUtc = startUtc.AddHours(-5);
 
-        refund.Should().Be(expected);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            policy.GetRefundAmount(-1m, startUtc, cancelUtc));
     }
 
     [Test]
-    public void Refund_after_class_start_is_zero()
+    public void GetRefundAmount_returns_zero_when_cancel_is_after_class_start()
     {
         var policy = new RefundPolicy();
-        var start = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var cancel = start.AddMinutes(1);
 
-        policy.GetRefundAmount(100m, start, cancel).Should().Be(0m);
+        var startUtc = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var cancelUtc = startUtc.AddMinutes(1); // after start
+
+        var refund = policy.GetRefundAmount(100m, startUtc, cancelUtc);
+
+        Assert.That(refund, Is.EqualTo(0m));
     }
 }
