@@ -1,0 +1,4 @@
+﻿Membership: Standard, Premium, Student
+TimeSlot: OffPeak, Peak
+Occupancy: Low, Mid, High
+CancelWindow: GE24H, H2_24H, LT2H
