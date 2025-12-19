@@ -13,6 +13,9 @@ builder.Services.AddSingleton<IMemberRepository, InMemoryMemberRepository>();
 builder.Services.AddSingleton<IClassRepository, InMemoryClassRepository>();
 builder.Services.AddSingleton<IReservationRepository, InMemoryReservationRepository>();
 builder.Services.AddScoped<ReservationService>();
+builder.Services.AddSingleton<RefundPolicy>();
+builder.Services.AddScoped<CancellationService>();
+
 
 var app = builder.Build();
 

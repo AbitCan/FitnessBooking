@@ -67,4 +67,20 @@ public sealed class InMemoryReservationRepository : IReservationRepository
             return Task.CompletedTask;
         }
     }
+    public Task<Reservation?> GetAsync(Guid reservationId, CancellationToken ct = default)
+    {
+        lock (_lock)
+        {
+            var res = _reservations.FirstOrDefault(r => r.Id == reservationId);
+            return Task.FromResult(res);
+        }
+    }
+
+    public Task UpdateAsync(Reservation reservation, CancellationToken ct = default)
+    {
+        // For in-memory list of objects, the object reference is already updated.
+        // This method exists for future DB implementation.
+        return Task.CompletedTask;
+    }
+
 }

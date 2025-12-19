@@ -8,8 +8,12 @@ namespace FitnessBooking.Api.Controllers;
 public sealed class ReservationsController : ControllerBase
 {
     private readonly ReservationService _service;
-
-    public ReservationsController(ReservationService service) => _service = service;
+    private readonly CancellationService _cancellation;
+    public ReservationsController(ReservationService service, CancellationService cancellation)
+    {
+        _service = service;
+        _cancellation = cancellation;
+    }
 
     public sealed record CreateReservationRequest(Guid MemberId, Guid ClassId);
     public sealed record CreateReservationResponse(Guid Id);
@@ -34,4 +38,21 @@ public sealed class ReservationsController : ControllerBase
             _ => StatusCode(500, "Unknown error.")
         };
     }
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
+    {
+        var result = await _cancellation.CancelAsync(id, DateTime.UtcNow, ct);
+
+        if (result.Success)
+            return Ok(new { refund = result.Refund });
+
+        return result.Error switch
+        {
+            CancelReservationError.ReservationNotFound => NotFound("Reservation not found."),
+            CancelReservationError.ClassNotFound => NotFound("Class not found."),
+            CancelReservationError.AlreadyCancelled => Conflict("Already cancelled."),
+            _ => StatusCode(500, "Unknown error.")
+        };
+    }
+
 }
