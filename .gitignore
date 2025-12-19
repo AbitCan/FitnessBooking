@@ -8,3 +8,4 @@ Thumbs.db
 tools/pairwise/bin/pict.exe
 **/TestResults/
 tools/coverage/
+**/StrykerOutput/
