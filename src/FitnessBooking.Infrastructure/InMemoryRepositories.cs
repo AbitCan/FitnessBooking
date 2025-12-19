@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using FitnessBooking.Application.Abstractions;
 using FitnessBooking.Domain;
+using System.Linq;
 
 namespace FitnessBooking.Infrastructure;
 
