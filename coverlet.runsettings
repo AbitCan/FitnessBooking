@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+
+          <!-- Don’t count tests themselves -->
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+
+          <!-- Exclude source-generated + build output -->
+          <ExcludeByFile>**/obj/**;**/bin/**;**/*.g.cs;**/*.generated.cs;**/*Generated*.cs</ExcludeByFile>
+
+          <!-- Exclude the OpenAPI source-generator namespace that’s crushing your % -->
+          <Exclude>[*]Microsoft.AspNetCore.OpenApi.Generated.*</Exclude>
+
+          <!-- Optional: ignore framework-ish noise if it shows up -->
+          <Exclude>[System.*]*,[Microsoft.*]*</Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
