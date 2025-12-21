@@ -1,0 +1,34 @@
+{
+  "_": {
+    "postman_variable_scope": "environment",
+    "postman_exported_at": "2025-12-21T02:24:38.313Z",
+    "postman_exported_using": "Postman/11.76.9"
+  },
+  "id": "5756a9c5-12f6-4c73-9df5-fb06ccd56797",
+  "name": "FitnessBooking Local",
+  "values": [
+    {
+      "type": "any",
+      "value": "http://localhost:5039",
+      "key": "baseUrl"
+    },
+    {
+      "type": "any",
+      "value": "2834a61a-cda2-464d-bfd1-a7870f58aaa4",
+      "key": "memberId"
+    },
+    {
+      "type": "any",
+      "value": "51e25511-90a9-4e6e-86f8-55d3eb27f9af",
+      "key": "classId"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "reservationId"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-12-21T03:16:15.415Z",
+  "_postman_exported_using": "Newman/6.2.1"
+}
