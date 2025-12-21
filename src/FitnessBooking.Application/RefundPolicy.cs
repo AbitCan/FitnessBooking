@@ -9,7 +9,11 @@ public sealed class RefundPolicy
     public decimal GetRefundAmount(decimal pricePaid, DateTime classStartUtc, DateTime cancelUtc)
     {
         if (pricePaid < 0) throw new ArgumentOutOfRangeException(nameof(pricePaid));
-        if (cancelUtc > classStartUtc) return 0m; // cancelling after start => 0
+
+        // This is an equivalent mutant for your business rules (>, >= both yield 0 at equality)
+        // Stryker disable once equality
+        if (cancelUtc > classStartUtc) return 0m;
+
 
         var delta = classStartUtc - cancelUtc;
 

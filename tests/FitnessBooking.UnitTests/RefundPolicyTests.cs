@@ -19,6 +19,17 @@ public class RefundPolicyTests
     }
 
     [Test]
+    public void GetRefundAmount_does_not_throw_when_pricePaid_is_zero()
+    {
+        var policy = new RefundPolicy();
+
+        var startUtc = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var cancelUtc = startUtc.AddHours(-25); // well before start
+
+        Assert.DoesNotThrow(() => policy.GetRefundAmount(0m, startUtc, cancelUtc));
+    }
+
+    [Test]
     public void GetRefundAmount_returns_zero_when_cancel_is_after_class_start()
     {
         var policy = new RefundPolicy();
@@ -30,6 +41,7 @@ public class RefundPolicyTests
 
         Assert.That(refund, Is.EqualTo(0m));
     }
+
     [Test]
     public void GetRefundAmount_full_refund_at_exactly_24_hours()
     {
@@ -47,7 +59,7 @@ public class RefundPolicyTests
     {
         var policy = new RefundPolicy();
         var startUtc = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var cancelUtc = startUtc.AddHours(-24).AddTicks(1); // delta = 23:59:59.9999999
+        var cancelUtc = startUtc.AddHours(-24).AddTicks(1); // 23:59:59.9999999 before start
 
         var refund = policy.GetRefundAmount(100m, startUtc, cancelUtc);
 
@@ -71,11 +83,10 @@ public class RefundPolicyTests
     {
         var policy = new RefundPolicy();
         var startUtc = new DateTime(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var cancelUtc = startUtc.AddHours(-2).AddTicks(1); // delta = 1:59:59.9999999
+        var cancelUtc = startUtc.AddHours(-2).AddTicks(1); // 1:59:59.9999999 before start
 
         var refund = policy.GetRefundAmount(100m, startUtc, cancelUtc);
 
         Assert.That(refund, Is.EqualTo(0m));
     }
-
 }
