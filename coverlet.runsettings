@@ -4,20 +4,21 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
-          <Format>cobertura</Format>
+			<Format>cobertura</Format>
 
-          <!-- Don’t count tests themselves -->
-          <IncludeTestAssembly>false</IncludeTestAssembly>
+			<!-- Don’t count tests themselves -->
+			<IncludeTestAssembly>false</IncludeTestAssembly>
 
-          <!-- Exclude source-generated + build output -->
-          <ExcludeByFile>**/obj/**;**/bin/**;**/*.g.cs;**/*.generated.cs;**/*Generated*.cs</ExcludeByFile>
+			<!-- Exclude build output + generated code -->
+			<ExcludeByFile>**/obj/**;**/bin/**;**/*.g.cs;**/*.generated.cs;**/*Generated*.cs;**/FitnessBooking.Api/**</ExcludeByFile>
 
-          <!-- Exclude the OpenAPI source-generator namespace that’s crushing your % -->
-          <Exclude>[*]Microsoft.AspNetCore.OpenApi.Generated.*</Exclude>
+			<!-- Exclude assemblies (business-logic only) -->
+			<Exclude>[FitnessBooking.Api]*,[System.*]*,[Microsoft.*]*</Exclude>
 
-          <!-- Optional: ignore framework-ish noise if it shows up -->
-          <Exclude>[System.*]*,[Microsoft.*]*</Exclude>
-        </Configuration>
+			<!-- Exclude common generated-code markers -->
+			<ExcludeByAttribute>GeneratedCodeAttribute;CompilerGeneratedAttribute</ExcludeByAttribute>
+		</Configuration>
+
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>

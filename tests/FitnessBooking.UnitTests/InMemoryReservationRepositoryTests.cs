@@ -8,6 +8,23 @@ namespace FitnessBooking.UnitTests;
 
 public class InMemoryReservationRepositoryTests
 {
+    private static Reservation MakeReservation(
+        Guid id,
+        Guid memberId,
+        Guid classId,
+        DateTime? cancelledAtUtc)
+    {
+        return new Reservation
+        {
+            Id = id,
+            MemberId = memberId,
+            ClassId = classId,
+            ReservedAtUtc = DateTime.UtcNow,
+            PricePaid = 10m,
+            CancelledAtUtc = cancelledAtUtc
+        };
+    }
+
     [Test]
     public async Task CountActiveForClassAsync_counts_only_active_for_target_class()
     {
@@ -16,40 +33,17 @@ public class InMemoryReservationRepositoryTests
         var classA = Guid.NewGuid();
         var classB = Guid.NewGuid();
 
-        // A + active  => should count
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = Guid.NewGuid(),
-            ClassId = classA,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = null
-        });
+        // (true && true) => count
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), Guid.NewGuid(), classA, cancelledAtUtc: null));
 
-        // A + cancelled => should NOT count (covers: ClassId true, CancelledAtUtc false)
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = Guid.NewGuid(),
-            ClassId = classA,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = DateTime.UtcNow
-        });
+        // (true && false) => do NOT count
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), Guid.NewGuid(), classA, cancelledAtUtc: DateTime.UtcNow));
 
-        // B + active => should NOT count (covers: ClassId false -> short-circuit)
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = Guid.NewGuid(),
-            ClassId = classB,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = null
-        });
+        // (false && ...) short-circuit => do NOT count
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), Guid.NewGuid(), classB, cancelledAtUtc: null));
 
         var countA = await repo.CountActiveForClassAsync(classA);
+
         Assert.That(countA, Is.EqualTo(1));
     }
 
@@ -61,18 +55,10 @@ public class InMemoryReservationRepositoryTests
         var member = Guid.NewGuid();
         var classId = Guid.NewGuid();
 
-        // Exact active match => true (covers all conditions true)
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = member,
-            ClassId = classId,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = null
-        });
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), member, classId, cancelledAtUtc: null));
 
         var exists = await repo.ExistsActiveAsync(member, classId);
+
         Assert.That(exists, Is.True);
     }
 
@@ -84,18 +70,11 @@ public class InMemoryReservationRepositoryTests
         var member = Guid.NewGuid();
         var classId = Guid.NewGuid();
 
-        // Member true, Class true, CancelledAtUtc NOT null => should be false
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = member,
-            ClassId = classId,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = DateTime.UtcNow
-        });
+        // member true, class true, cancelled false => overall false
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), member, classId, cancelledAtUtc: DateTime.UtcNow));
 
         var exists = await repo.ExistsActiveAsync(member, classId);
+
         Assert.That(exists, Is.False);
     }
 
@@ -108,18 +87,28 @@ public class InMemoryReservationRepositoryTests
         var classWanted = Guid.NewGuid();
         var otherClass = Guid.NewGuid();
 
-        // Member true, Class false => should short-circuit => false
-        await repo.AddAsync(new Reservation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = member,
-            ClassId = otherClass,
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = null
-        });
+        // member true, class false => short-circuit => false
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), member, otherClass, cancelledAtUtc: null));
 
         var exists = await repo.ExistsActiveAsync(member, classWanted);
+
+        Assert.That(exists, Is.False);
+    }
+
+    [Test]
+    public async Task ExistsActiveAsync_false_when_memberId_does_not_match()
+    {
+        var repo = new InMemoryReservationRepository();
+
+        var realMember = Guid.NewGuid();
+        var otherMember = Guid.NewGuid();
+        var classId = Guid.NewGuid();
+
+        // member false => short-circuit => false
+        await repo.AddAsync(MakeReservation(Guid.NewGuid(), realMember, classId, cancelledAtUtc: null));
+
+        var exists = await repo.ExistsActiveAsync(otherMember, classId);
+
         Assert.That(exists, Is.False);
     }
 
@@ -133,15 +122,7 @@ public class InMemoryReservationRepositoryTests
         var missing = await repo.GetAsync(id);
         Assert.That(missing, Is.Null);
 
-        await repo.AddAsync(new Reservation
-        {
-            Id = id,
-            MemberId = Guid.NewGuid(),
-            ClassId = Guid.NewGuid(),
-            ReservedAtUtc = DateTime.UtcNow,
-            PricePaid = 10m,
-            CancelledAtUtc = null
-        });
+        await repo.AddAsync(MakeReservation(id, Guid.NewGuid(), Guid.NewGuid(), cancelledAtUtc: null));
 
         var found = await repo.GetAsync(id);
         Assert.That(found, Is.Not.Null);
