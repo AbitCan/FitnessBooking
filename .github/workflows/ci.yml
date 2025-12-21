@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test-coverage-mutation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          include-prerelease: true
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      # Coverage (uses your runsettings file from repo root)
+      - name: Test + Coverage
+        run: |
+          dotnet test -c Release --no-build \
+            --collect:"XPlat Code Coverage" \
+            --settings coverlet.runsettings
+
+      - name: Upload TestResults (coverage xml)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults-Coverage
+          path: "**/TestResults/**"
+
+      # Mutation (non-manual) — runs every push/PR
+      - name: Install Stryker
+        run: dotnet tool install -g dotnet-stryker
+
+      - name: Run Stryker (UnitTests)
+        working-directory: tests/FitnessBooking.UnitTests
+        run: dotnet stryker --reporter "progress" --reporter "html" --verbosity "info" --log-to-file
+
+      - name: Upload StrykerOutput (HTML report)
+        uses: actions/upload-artifact@v4
+        with:
+          name: StrykerOutput
+          path: tests/FitnessBooking.UnitTests/StrykerOutput/**
