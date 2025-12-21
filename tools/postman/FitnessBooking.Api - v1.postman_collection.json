@@ -17,10 +17,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Class created\", () => pm.expect(pm.response.code).to.equal(201));\r",
-									"const json = pm.response.json();\r",
-									"pm.environment.set(\"classId\", json.id);\r",
-									"console.log(\"classId =\", json.id);\r",
+									"pm.test(\"Class created\", () => pm.expect(pm.response.code).to.eql(201));\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"pm.environment.set(\"classId\", body.id);\r",
+									"console.log(\"classId =\", body.id);\r",
 									""
 								],
 								"type": "text/javascript",
@@ -122,10 +123,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Member created\", () => pm.expect(pm.response.code).to.equal(201));\r",
-									"const json = pm.response.json();\r",
-									"pm.environment.set(\"memberId\", json.id);\r",
-									"console.log(\"memberId =\", json.id);\r",
+									"pm.test(\"Member created\", () => pm.expect(pm.response.code).to.eql(201));\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"pm.environment.set(\"memberId\", body.id);\r",
+									"console.log(\"memberId =\", body.id);\r",
 									""
 								],
 								"type": "text/javascript",
@@ -235,6 +237,128 @@
 					"name": "{id}",
 					"item": [
 						{
+							"name": "/reservations",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"console.log(\"POST /reservations status =\", pm.response.code);\r",
+											"console.log(\"POST /reservations body =\", pm.response.text());\r",
+											"\r",
+											"pm.test(\"Reservation created\", () => pm.expect(pm.response.code).to.eql(201));\r",
+											"\r",
+											"if (pm.response.code === 201) {\r",
+											"  const data = pm.response.json();\r",
+											"  pm.environment.set(\"reservationId\", data.id);\r",
+											"  console.log(\"reservationId =\", data.id);\r",
+											"} else {\r",
+											"  pm.environment.unset(\"reservationId\");\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.log(\"Using memberId =\", pm.environment.get(\"memberId\"));\r",
+											"console.log(\"Using classId  =\", pm.environment.get(\"classId\"));\r",
+											"console.log(\"Request body =\", pm.request.body.raw);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "text/plain"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"memberId\": \"{{memberId}}\",\n  \"classId\": \"{{classId}}\"\n}\n",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/reservations",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reservations"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "OK",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "text/plain"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"memberId\": \"9ec6f9ae-59c7-adc1-4785-3c6ec81bd9eb\",\n  \"classId\": \"a7a7b9c6-b581-f249-33d3-1966e2ddfdcd\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/reservations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"reservations"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"id\": \"c5b399c2-5531-5548-dcd1-eede2bf55f1d\"\n}"
+								}
+							]
+						},
+						{
 							"name": "/reservations/:id",
 							"event": [
 								{
@@ -273,13 +397,13 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/reservations/147e9b72-9ea5-48b0-aeac-b0fa97db9894",
+									"raw": "{{baseUrl}}/reservations/{{reservationId}}",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"reservations",
-										"147e9b72-9ea5-48b0-aeac-b0fa97db9894"
+										"{{reservationId}}"
 									]
 								}
 							},
@@ -314,119 +438,6 @@
 									"body": ""
 								}
 							]
-						}
-					]
-				},
-				{
-					"name": "/reservations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Reservation created\", () => pm.expect(pm.response.code).to.equal(201));\r",
-									"const json = pm.response.json();\r",
-									"pm.environment.set(\"reservationId\", json.id);\r",
-									"console.log(\"reservationId =\", json.id);\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"console.log(\"Using memberId =\", pm.environment.get(\"memberId\"));\r",
-									"console.log(\"Using classId  =\", pm.environment.get(\"classId\"));\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Accept",
-								"value": "text/plain"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"memberId\": \"1dc0a4bf-6460-49f1-8714-c6db622c7f81\",\n  \"classId\": \"8c915c2b-9362-4a5c-961f-a8d0713e1cea\"\n}",
-							"options": {
-								"raw": {
-									"headerFamily": "json",
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/reservations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"reservations"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "OK",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Accept",
-										"value": "text/plain"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"memberId\": \"9ec6f9ae-59c7-adc1-4785-3c6ec81bd9eb\",\n  \"classId\": \"a7a7b9c6-b581-f249-33d3-1966e2ddfdcd\"\n}",
-									"options": {
-										"raw": {
-											"headerFamily": "json",
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/reservations",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"reservations"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
-							"cookie": [],
-							"body": "{\n  \"id\": \"c5b399c2-5531-5548-dcd1-eede2bf55f1d\"\n}"
 						}
 					]
 				}

@@ -9,3 +9,4 @@ tools/pairwise/bin/pict.exe
 **/TestResults/
 tools/coverage/
 **/StrykerOutput/
+tools/postman/after_run_environment.json
