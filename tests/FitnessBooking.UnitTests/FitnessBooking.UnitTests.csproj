@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FitnessBooking.Application\FitnessBooking.Application.csproj" />
+    <ProjectReference Include="..\..\src\FitnessBooking.Infrastructure\FitnessBooking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

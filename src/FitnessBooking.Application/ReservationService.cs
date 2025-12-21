@@ -60,7 +60,7 @@ public sealed class ReservationService
             return new(false, null, CreateReservationError.ClassFull);
 
         // ---- Pricing (simple dynamic pricing) ----
-        const decimal basePrice = 200m;
+        const decimal basePrice = 100m;
 
         // Occupancy ratio based on current active reservations
         var occupancyRatio = (decimal)activeCount / fitnessClass.Capacity;

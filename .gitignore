@@ -10,3 +10,8 @@ tools/pairwise/bin/pict.exe
 tools/coverage/
 **/StrykerOutput/
 tools/postman/after_run_environment.json
+tools/coverage/
+coverage-report/
+tools/coverage-core/
+tools/coverage-full/
+TestResults/
