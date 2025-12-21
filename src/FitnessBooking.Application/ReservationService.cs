@@ -34,10 +34,10 @@ public sealed class ReservationService
     }
 
     public async Task<CreateReservationResult> CreateAsync(
-        Guid memberId,
-        Guid classId,
-        DateTime nowUtc,
-        CancellationToken ct = default)
+    Guid memberId,
+    Guid classId,
+    DateTime nowUtc,
+    CancellationToken ct = default)
     {
         var member = await _members.GetAsync(memberId, ct);
         if (member is null)
@@ -59,15 +59,44 @@ public sealed class ReservationService
         if (activeCount >= fitnessClass.Capacity)
             return new(false, null, CreateReservationError.ClassFull);
 
+        // ---- Pricing (simple dynamic pricing) ----
+        const decimal basePrice = 200m;
+
+        // Occupancy ratio based on current active reservations
+        var occupancyRatio = (decimal)activeCount / fitnessClass.Capacity;
+
+        // Occupancy multiplier: Low/Mid/High
+        var occupancyMultiplier =
+            occupancyRatio >= 0.80m ? 1.30m :
+            occupancyRatio >= 0.40m ? 1.10m :
+                                      1.00m;
+
+        // Peak vs OffPeak (example rule: 17:00–21:59 UTC is peak)
+        var hour = fitnessClass.StartAtUtc.Hour;
+        var isPeak = hour >= 17 && hour < 22;
+        var timeMultiplier = isPeak ? 1.20m : 1.00m;
+
+        // Membership multiplier (discounts)
+        var membershipMultiplier = member.MembershipType switch
+        {
+            MembershipType.Premium => 0.80m,
+            MembershipType.Student => 0.70m,
+            _ => 1.00m
+        };
+
+        var price = decimal.Round(basePrice * occupancyMultiplier * timeMultiplier * membershipMultiplier, 2);
+        // -----------------------------------------
+
         var reservation = new Reservation
         {
             MemberId = memberId,
             ClassId = classId,
             ReservedAtUtc = nowUtc,
-            PricePaid = 0m
+            PricePaid = price
         };
 
         await _reservations.AddAsync(reservation, ct);
         return new(true, reservation.Id, CreateReservationError.None);
     }
+
 }
