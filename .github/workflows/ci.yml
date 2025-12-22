@@ -2,28 +2,22 @@ name: CI
 
 on:
   push:
+    branches: [ "main", "master" ]
   pull_request:
 
 jobs:
-  build-test-coverage-mutation:
+  build-test-coverage-newman:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET (from global.json)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.101"
-
-      - name: Cache NuGet
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          global-json-file: global.json
+      # actions/setup-dotnet supports global-json-file + dotnet-quality (not include-prerelease) :contentReference[oaicite:1]{index=1}
 
       - name: Restore
         run: dotnet restore
@@ -31,29 +25,61 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      # Coverage (uses your runsettings file from repo root)
-      - name: Test + Coverage
+      - name: Test + Collect Coverage (XPlat)
         run: |
           dotnet test -c Release --no-build \
             --collect:"XPlat Code Coverage" \
-            --settings coverlet.runsettings
+            --settings coverlet.runsettings \
+            --logger "trx;LogFileName=test_results.trx"
 
-      - name: Upload TestResults (coverage xml)
+      - name: Install ReportGenerator
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Generate merged coverage report
+        run: |
+          reportgenerator \
+            "-reports:**/coverage.cobertura.xml" \
+            "-targetdir:TestResults/CoverageReport" \
+            "-reporttypes:HtmlInline;Cobertura"
+
+      - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TestResults-Coverage
-          path: "**/TestResults/**"
+          name: coverage-report
+          path: TestResults/CoverageReport
 
-      # Mutation (non-manual) — runs every push/PR
-      - name: Install Stryker
-        run: dotnet tool install -g dotnet-stryker
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Run Stryker (UnitTests)
-        working-directory: .
-        run: dotnet stryker --reporter "progress" --reporter "html" --verbosity "info" --log-to-file
+      - name: Install Newman
+        run: npm install -g newman
 
-      - name: Upload StrykerOutput (HTML report)
+      - name: Start API (background)
+        run: |
+          dotnet run --project src/FitnessBooking.Api --urls http://localhost:5039 > api.log 2>&1 &
+          for i in {1..30}; do
+            if curl -s http://localhost:5039/ >/dev/null; then
+              echo "API is up"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run Postman/Newman collection
+        run: |
+          newman run "tools/postman/FitnessBooking.Api - v1.postman_collection.json" \
+            -e "tools/postman/FitnessBooking Local.postman_environment.json" \
+            --env-var "baseUrl=http://localhost:5039" \
+            --delay-request 200 \
+            --reporters cli,junit \
+            --reporter-junit-export TestResults/newman-junit.xml
+
+      - name: Upload Newman results
         uses: actions/upload-artifact@v4
         with:
-          name: StrykerOutput
-          path: tests/FitnessBooking.UnitTests/StrykerOutput/**
+          name: newman-results
+          path: TestResults/newman-junit.xml
