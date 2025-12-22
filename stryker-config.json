@@ -1,28 +1,15 @@
 {
   "stryker-config": {
-    "concurrency": 8,
-    "mutation-level": "Standard",
-    "language-version": "latest",
-    "additional-timeout": 5000,
-
     "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
-
     "mutate": [
       "src/FitnessBooking.Application/**/*.cs"
     ],
-
     "coverage-analysis": "perTest",
-
-    "thresholds": {
-      "high": 80,
-      "low": 60,
-      "break": 0
-    },
-
-    "reporters": [
-      "progress",
-      "html"
-    ],
+    "thresholds": { "high": 80, "low": 60, "break": 0 },
+    "reporters": [ "progress", "html" ],
+    "verbosity": "info"
+  }
+}
 
     "test-projects": [
       "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj",
