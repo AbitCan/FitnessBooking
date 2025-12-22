@@ -1,0 +1,60 @@
+name: Security (ZAP baseline)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Start API (background)
+        run: |
+          dotnet run --project src/FitnessBooking.Api --urls http://localhost:5039 > api.log 2>&1 &
+          for i in {1..30}; do
+            if curl -s http://localhost:5039/ >/dev/null; then
+              echo "API is up"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: ZAP Baseline Scan (docker)
+        run: |
+          mkdir -p zap
+          docker run --rm --network host \
+            -v ${{ github.workspace }}/zap:/zap/wrk/:rw \
+            owasp/zap2docker-stable \
+            zap-baseline.py \
+              -t http://127.0.0.1:5039 \
+              -r zap_report.html \
+              -J zap_report.json \
+              -w zap_report.md || true
+
+      - name: Upload ZAP report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap
+
+      - name: Upload api log (debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-log
+          path: api.log

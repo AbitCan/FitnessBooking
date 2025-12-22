@@ -134,3 +134,22 @@ jobs:
           path: |
             tests/FitnessBooking.UnitTests/StrykerOutput/**/reports/**
             tests/FitnessBooking.UnitTests/StrykerOutput/**/stryker.log
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: "v1.4.2"
+
+      - name: Run k6 performance test
+        run: |
+          mkdir -p TestResults
+          k6 run -e BASE_URL=http://localhost:5039 tools/performance/k6-e2e.js \
+            --summary-export TestResults/k6-summary.json
+
+      - name: Upload k6 results
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: TestResults/k6-summary.json
+
+
+
