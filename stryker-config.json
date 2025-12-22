@@ -1,26 +1,24 @@
 {
   "stryker-config": {
+    "solution": "FitnessBooking.sln",
+    "test-projects": [
+      "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj"
+    ],
     "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
     "mutate": [
       "src/FitnessBooking.Application/**/*.cs"
     ],
     "coverage-analysis": "perTest",
-    "thresholds": { "high": 80, "low": 60, "break": 0 },
-    "reporters": [ "progress", "html" ],
-    "verbosity": "info"
-  }
-}
-
-    "test-projects": [
-      "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj",
-      "tests/FitnessBooking.PropertyTests/FitnessBooking.PropertyTests.csproj",
-      "tests/FitnessBooking.IntegrationTests/FitnessBooking.IntegrationTests.csproj"
+    "reporters": [
+      "progress",
+      "html"
     ],
-
-    "test-case-filter": "",
-    "ignore-mutations": [],
-    "ignore-methods": [],
-    "report-file-name": "mutation-report",
-    "break-on-initial-test-failure": false
+    "concurrency": 4,
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 0
+    },
+    "verbosity": "info"
   }
 }
