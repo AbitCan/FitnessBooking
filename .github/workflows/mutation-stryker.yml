@@ -1,0 +1,38 @@
+name: CI (mutation-stryker)
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Install Stryker
+        run: dotnet tool install -g dotnet-stryker
+
+      - name: Run Stryker (from repo root)
+        run: dotnet stryker --config-file stryker-config.json --log-to-file
+
+      - name: Upload Stryker report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stryker-report
+          path: StrykerOutput

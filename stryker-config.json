@@ -1,24 +1,32 @@
 {
   "stryker-config": {
     "solution": "FitnessBooking.sln",
+    "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
     "test-projects": [
       "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj"
     ],
-    "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
     "mutate": [
-      "src/FitnessBooking.Application/**/*.cs"
+      "src/FitnessBooking.Application/**/*.cs",
+      "!src/**/bin/**",
+      "!src/**/obj/**"
     ],
     "coverage-analysis": "perTest",
-    "reporters": [
-      "progress",
-      "html"
-    ],
-    "concurrency": 4,
+    "mutation-level": "Standard",
     "thresholds": {
       "high": 80,
       "low": 60,
       "break": 0
     },
-    "verbosity": "info"
+    "reporters": [
+      "progress",
+      "html"
+    ],
+    "report-file-name": "mutation-report",
+    "verbosity": "info",
+    "additional-timeout": 5000,
+    "concurrency": 1,
+    "disable-bail": false,
+    "disable-mix-mutants": false,
+    "break-on-initial-test-failure": true
   }
 }
