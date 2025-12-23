@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FitnessBooking – Demo UI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>FitnessBooking – Demo UI</h1>
+      <p>Quick manual UI to create Class/Member/Reservation and Cancel to see refund.</p>
+      <p class="muted">Tip: open DevTools → Console for extra logs.</p>
+    </header>
+
+    <section class="card">
+      <h2>1) Create Class</h2>
+      <form id="form-class">
+        <label>Name <input id="className" value="Refund Demo" required /></label>
+        <label>Instructor <input id="classInstructor" value="Alex" required /></label>
+        <label>Capacity <input id="classCapacity" type="number" min="1" value="10" required /></label>
+        <label>StartAtUtc (ISO) <input id="classStartUtc" value="2030-01-01T12:00:00Z" required /></label>
+        <button type="submit">POST /classes</button>
+      </form>
+      <div class="row">
+        <div><strong>classId:</strong> <code id="classId">(none)</code></div>
+      </div>
+      <pre id="out-class" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>2) Create Member</h2>
+      <form id="form-member">
+        <label>Name <input id="memberName" value="Can" required /></label>
+        <label>MembershipType
+          <select id="memberType">
+            <option value="0">Standard (0)</option>
+            <option value="1">Premium (1)</option>
+            <option value="2">Student (2)</option>
+          </select>
+        </label>
+        <button type="submit">POST /members</button>
+      </form>
+      <div class="row">
+        <div><strong>memberId:</strong> <code id="memberId">(none)</code></div>
+      </div>
+      <pre id="out-member" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>3) Create Reservation</h2>
+      <form id="form-reservation">
+        <label>memberId <input id="reservationMemberId" placeholder="(auto from above)" /></label>
+        <label>classId <input id="reservationClassId" placeholder="(auto from above)" /></label>
+        <button type="submit">POST /reservations</button>
+      </form>
+      <div class="row">
+        <div><strong>reservationId:</strong> <code id="reservationId">(none)</code></div>
+      </div>
+      <pre id="out-reservation" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>4) Cancel Reservation (Refund)</h2>
+      <form id="form-cancel">
+        <label>reservationId <input id="cancelReservationId" placeholder="(auto from above)" /></label>
+        <label>cancelUtc (ISO) <input id="cancelUtc" value="2029-12-31T12:00:00Z" required /></label>
+        <button type="submit">DELETE /reservations/:id</button>
+      </form>
+      <div class="row">
+        <div><strong>refund:</strong> <code id="refund">(none)</code></div>
+      </div>
+      <pre id="out-cancel" class="out"></pre>
+    </section>
+
+    <footer class="muted">
+      Served from <code>FitnessBooking.Api/wwwroot</code>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

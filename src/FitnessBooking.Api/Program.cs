@@ -26,6 +26,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+
 // IMPORTANT: map controllers
 app.MapControllers();
 
