@@ -27,8 +27,8 @@ jobs:
       - name: Install Stryker
         run: dotnet tool install -g dotnet-stryker
 
-      - name: Run Stryker (from repo root)
-        run: dotnet stryker --config-file stryker-config.json --log-to-file
+      - name: Run Stryker (UnitTests)
+  	run: dotnet stryker --config-file stryker-config.json --log-to-file
 
       - name: Upload Stryker report (always)
         if: always()
