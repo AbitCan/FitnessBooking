@@ -59,8 +59,16 @@ jobs:
           dotnet tool install -g dotnet-stryker || dotnet tool update -g dotnet-stryker
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
+      - name: Debug paths (quick sanity)
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 3 -name "*.sln" -print
+
       - name: Run Stryker (UnitTests)
-        run: dotnet stryker --config-file stryker-config.json --log-to-file
+        working-directory: ${{ github.workspace }}
+        run: dotnet stryker --config-file ${{ github.workspace }}/stryker-config.json --log-to-file
+
 
       - name: Upload Stryker report (always)
         if: always()
