@@ -8,6 +8,7 @@ on:
 jobs:
   mutation:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,14 +26,18 @@ jobs:
         run: dotnet build -c Release --no-restore
 
       - name: Install Stryker
-        run: dotnet tool install -g dotnet-stryker
+        run: |
+          dotnet tool update -g dotnet-stryker
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Run Stryker (UnitTests)
-  	run: dotnet stryker --config-file stryker-config.json --log-to-file
+        run: dotnet stryker --config-file stryker-config.json --log-to-file
 
       - name: Upload Stryker report (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: stryker-report
-          path: StrykerOutput
+          path: |
+            **/StrykerOutput/**
+            **/stryker.log
