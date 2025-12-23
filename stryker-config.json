@@ -1,6 +1,5 @@
 {
   "stryker-config": {
-    "solution": "FitnessBooking.sln",
     "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
     "test-projects": [
       "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj"
@@ -17,10 +16,7 @@
       "low": 60,
       "break": 0
     },
-    "reporters": [
-      "progress",
-      "html"
-    ],
+    "reporters": ["progress", "html"],
     "report-file-name": "mutation-report",
     "verbosity": "info",
     "additional-timeout": 5000,
