@@ -2,83 +2,398 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FitnessBooking – Demo UI</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container">
+  <div class="container">
     <header>
-      <h1>FitnessBooking – Demo UI</h1>
-      <p>Quick manual UI to create Class/Member/Reservation and Cancel to see refund.</p>
-      <p class="muted">Tip: open DevTools → Console for extra logs.</p>
+      <h1>FitnessBooking Demo UI</h1>
+      <p>Create a class, create a member, create a reservation, then cancel it and see the refund.</p>
+      <div class="kv">
+        <span>API Base URL: <code id="baseUrlLabel">http://localhost:5039</code></span>
+        <span>Tip: Run API with <code>dotnet run --project src/FitnessBooking.Api --urls http://localhost:5039</code></span>
+      </div>
     </header>
 
-    <section class="card">
-      <h2>1) Create Class</h2>
-      <form id="form-class">
-        <label>Name <input id="className" value="Refund Demo" required /></label>
-        <label>Instructor <input id="classInstructor" value="Alex" required /></label>
-        <label>Capacity <input id="classCapacity" type="number" min="1" value="10" required /></label>
-        <label>StartAtUtc (ISO) <input id="classStartUtc" value="2030-01-01T12:00:00Z" required /></label>
-        <button type="submit">POST /classes</button>
-      </form>
-      <div class="row">
-        <div><strong>classId:</strong> <code id="classId">(none)</code></div>
-      </div>
-      <pre id="out-class" class="out"></pre>
-    </section>
+    <div class="grid">
+      <!-- SETTINGS -->
+      <section class="card span-2">
+        <h2>
+          <span class="badge">Settings</span>
+          Base URL
+        </h2>
 
-    <section class="card">
-      <h2>2) Create Member</h2>
-      <form id="form-member">
-        <label>Name <input id="memberName" value="Can" required /></label>
-        <label>MembershipType
-          <select id="memberType">
-            <option value="0">Standard (0)</option>
-            <option value="1">Premium (1)</option>
-            <option value="2">Student (2)</option>
-          </select>
-        </label>
-        <button type="submit">POST /members</button>
-      </form>
-      <div class="row">
-        <div><strong>memberId:</strong> <code id="memberId">(none)</code></div>
-      </div>
-      <pre id="out-member" class="out"></pre>
-    </section>
+        <form id="settingsForm">
+          <div class="row2">
+            <label>
+              Base URL (no trailing slash)
+              <input id="baseUrl" type="text" value="http://localhost:5039" placeholder="http://localhost:5039" />
+            </label>
 
-    <section class="card">
-      <h2>3) Create Reservation</h2>
-      <form id="form-reservation">
-        <label>memberId <input id="reservationMemberId" placeholder="(auto from above)" /></label>
-        <label>classId <input id="reservationClassId" placeholder="(auto from above)" /></label>
-        <button type="submit">POST /reservations</button>
-      </form>
-      <div class="row">
-        <div><strong>reservationId:</strong> <code id="reservationId">(none)</code></div>
-      </div>
-      <pre id="out-reservation" class="out"></pre>
-    </section>
+            <label>
+              Quick presets
+              <select id="presetSelect">
+                <option value="">Choose…</option>
+                <option value="http://localhost:5039">Local (5039)</option>
+                <option value="http://localhost:5000">Local (5000)</option>
+              </select>
+            </label>
+          </div>
 
-    <section class="card">
-      <h2>4) Cancel Reservation (Refund)</h2>
-      <form id="form-cancel">
-        <label>reservationId <input id="cancelReservationId" placeholder="(auto from above)" /></label>
-        <label>cancelUtc (ISO) <input id="cancelUtc" value="2029-12-31T12:00:00Z" required /></label>
-        <button type="submit">DELETE /reservations/:id</button>
-      </form>
-      <div class="row">
-        <div><strong>refund:</strong> <code id="refund">(none)</code></div>
-      </div>
-      <pre id="out-cancel" class="out"></pre>
-    </section>
+          <div class="actions">
+            <button type="submit">Apply</button>
+            <button type="button" class="secondary" id="pingBtn">Ping API</button>
+            <button type="button" class="danger" id="clearBtn">Clear IDs</button>
+          </div>
 
-    <footer class="muted">
-      Served from <code>FitnessBooking.Api/wwwroot</code>
-    </footer>
-  </main>
+          <div class="out" id="settingsOut" aria-live="polite"></div>
 
-  <script src="app.js"></script>
+          <footer>
+            Stored IDs below are saved only in this page session.
+          </footer>
+        </form>
+      </section>
+
+      <!-- CREATE CLASS -->
+      <section class="card">
+        <h2><span class="badge">1</span> Create Class</h2>
+
+        <form id="classForm">
+          <label>
+            Name
+            <input id="className" type="text" value="Refund Demo" />
+          </label>
+
+          <div class="row2">
+            <label>
+              Instructor
+              <input id="classInstructor" type="text" value="Alex" />
+            </label>
+
+            <label>
+              Capacity
+              <input id="classCapacity" type="number" min="1" value="10" />
+            </label>
+          </div>
+
+          <label>
+            StartAtUtc (ISO)
+            <input id="classStartAtUtc" type="text" value="2030-01-01T12:00:00Z" />
+          </label>
+
+          <div class="actions">
+            <button type="submit">POST /classes</button>
+          </div>
+
+          <div class="kv">
+            <span>classId: <code id="classIdLabel">(none)</code></span>
+          </div>
+
+          <pre class="out" id="classOut"></pre>
+        </form>
+      </section>
+
+      <!-- CREATE MEMBER -->
+      <section class="card">
+        <h2><span class="badge">2</span> Create Member</h2>
+
+        <form id="memberForm">
+          <label>
+            Name
+            <input id="memberName" type="text" value="Can" />
+          </label>
+
+          <label>
+            MembershipType
+            <select id="memberMembershipType">
+              <option value="0">Standard (0)</option>
+              <option value="1">Premium (1)</option>
+              <option value="2">Student (2)</option>
+            </select>
+          </label>
+
+          <div class="actions">
+            <button type="submit">POST /members</button>
+          </div>
+
+          <div class="kv">
+            <span>memberId: <code id="memberIdLabel">(none)</code></span>
+          </div>
+
+          <pre class="out" id="memberOut"></pre>
+        </form>
+      </section>
+
+      <!-- CREATE RESERVATION -->
+      <section class="card span-2">
+        <h2><span class="badge">3</span> Create Reservation</h2>
+
+        <form id="reservationForm">
+          <div class="row2">
+            <label>
+              memberId
+              <input id="reservationMemberId" type="text" placeholder="auto-filled after creating member" />
+            </label>
+
+            <label>
+              classId
+              <input id="reservationClassId" type="text" placeholder="auto-filled after creating class" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="secondary">POST /reservations</button>
+          </div>
+
+          <div class="kv">
+            <span>reservationId: <code id="reservationIdLabel">(none)</code></span>
+          </div>
+
+          <pre class="out" id="reservationOut"></pre>
+        </form>
+      </section>
+
+      <!-- CANCEL RESERVATION -->
+      <section class="card span-2">
+        <h2><span class="badge">4</span> Cancel Reservation (Refund)</h2>
+
+        <form id="cancelForm">
+          <div class="row2">
+            <label>
+              reservationId
+              <input id="cancelReservationId" type="text" placeholder="auto-filled after creating reservation" />
+            </label>
+
+            <label>
+              CancelAtUtc (optional)
+              <input id="cancelAtUtc" type="text" placeholder="leave empty to use server/default logic" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="danger">DELETE /reservations/:id</button>
+          </div>
+
+          <div class="kv">
+            <span>refund: <code id="refundLabel">(none)</code></span>
+          </div>
+
+          <pre class="out" id="cancelOut"></pre>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // --------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    let baseUrl = $("baseUrl").value.trim();
+    let classId = "";
+    let memberId = "";
+    let reservationId = "";
+
+    function setBaseUrl(url) {
+      baseUrl = (url || "").trim().replace(/\/+$/, "");
+      $("baseUrl").value = baseUrl;
+      $("baseUrlLabel").textContent = baseUrl;
+      logOut("settingsOut", `Base URL set to: ${baseUrl}`);
+    }
+
+    function syncIdLabels() {
+      $("classIdLabel").textContent = classId || "(none)";
+      $("memberIdLabel").textContent = memberId || "(none)";
+      $("reservationIdLabel").textContent = reservationId || "(none)";
+
+      $("reservationClassId").value = classId || "";
+      $("reservationMemberId").value = memberId || "";
+      $("cancelReservationId").value = reservationId || "";
+    }
+
+    function logOut(outId, msg) {
+      const el = $(outId);
+      el.textContent = msg;
+    }
+
+    function pretty(obj) {
+      try { return JSON.stringify(obj, null, 2); } catch { return String(obj); }
+    }
+
+    async function httpJson(method, path, body) {
+      const url = `${baseUrl}${path}`;
+      const opts = {
+        method,
+        headers: { "Content-Type": "application/json" }
+      };
+      if (body !== undefined) opts.body = JSON.stringify(body);
+
+      const res = await fetch(url, opts);
+      const text = await res.text();
+
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch { /* not json */ }
+
+      return { res, text, json, url };
+    }
+
+    // --------- Settings ----------
+    $("settingsForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      setBaseUrl($("baseUrl").value);
+    });
+
+    $("presetSelect").addEventListener("change", (e) => {
+      if (e.target.value) setBaseUrl(e.target.value);
+    });
+
+    $("pingBtn").addEventListener("click", async () => {
+      try {
+        // We don't know a guaranteed GET endpoint; use a lightweight fetch to baseUrl
+        const url = `${baseUrl}/`;
+        const res = await fetch(url, { method: "GET" });
+        logOut("settingsOut", `Ping GET ${url} -> ${res.status} ${res.statusText}`);
+      } catch (err) {
+        logOut("settingsOut", `Ping failed: ${err}`);
+      }
+    });
+
+    $("clearBtn").addEventListener("click", () => {
+      classId = "";
+      memberId = "";
+      reservationId = "";
+      $("refundLabel").textContent = "(none)";
+      syncIdLabels();
+      logOut("settingsOut", "Cleared classId/memberId/reservationId.");
+      logOut("classOut", "");
+      logOut("memberOut", "");
+      logOut("reservationOut", "");
+      logOut("cancelOut", "");
+    });
+
+    // Initialize
+    setBaseUrl(baseUrl);
+    syncIdLabels();
+
+    // --------- Create Class ----------
+    $("classForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        name: $("className").value,
+        instructor: $("classInstructor").value,
+        capacity: Number($("classCapacity").value),
+        startAtUtc: $("classStartAtUtc").value
+      };
+
+      try {
+        const { res, json, text, url } = await httpJson("POST", "/classes", payload);
+
+        const out = {
+          request: { method: "POST", url, body: payload },
+          status: res.status,
+          response: json ?? text
+        };
+        logOut("classOut", pretty(out));
+
+        if (res.status === 201 && json && json.id) {
+          classId = json.id;
+          syncIdLabels();
+        }
+      } catch (err) {
+        logOut("classOut", `Error: ${err}`);
+      }
+    });
+
+    // --------- Create Member ----------
+    $("memberForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        name: $("memberName").value,
+        membershipType: Number($("memberMembershipType").value)
+      };
+
+      try {
+        const { res, json, text, url } = await httpJson("POST", "/members", payload);
+
+        const out = {
+          request: { method: "POST", url, body: payload },
+          status: res.status,
+          response: json ?? text
+        };
+        logOut("memberOut", pretty(out));
+
+        if (res.status === 201 && json && json.id) {
+          memberId = json.id;
+          syncIdLabels();
+        }
+      } catch (err) {
+        logOut("memberOut", `Error: ${err}`);
+      }
+    });
+
+    // --------- Create Reservation ----------
+    $("reservationForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        memberId: $("reservationMemberId").value.trim(),
+        classId: $("reservationClassId").value.trim()
+      };
+
+      try {
+        const { res, json, text, url } = await httpJson("POST", "/reservations", payload);
+
+        const out = {
+          request: { method: "POST", url, body: payload },
+          status: res.status,
+          response: json ?? text
+        };
+        logOut("reservationOut", pretty(out));
+
+        if (res.status === 201 && json && json.id) {
+          reservationId = json.id;
+          syncIdLabels();
+        }
+      } catch (err) {
+        logOut("reservationOut", `Error: ${err}`);
+      }
+    });
+
+    // --------- Cancel Reservation ----------
+    $("cancelForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = $("cancelReservationId").value.trim();
+      const cancelAtUtc = $("cancelAtUtc").value.trim();
+      const path = `/reservations/${encodeURIComponent(id)}`;
+
+      try {
+        // Your API currently accepts cancelUtc as parameter? If not, leave it out.
+        // If you DO support it via query string, enable this line:
+        // const pathWithQuery = cancelAtUtc ? `${path}?cancelAtUtc=${encodeURIComponent(cancelAtUtc)}` : path;
+
+        const { res, json, text, url } = await httpJson("DELETE", path /* or pathWithQuery */);
+
+        const out = {
+          request: { method: "DELETE", url, note: cancelAtUtc ? "cancelAtUtc provided but not sent (see comment in code)" : "" },
+          status: res.status,
+          response: json ?? text
+        };
+        logOut("cancelOut", pretty(out));
+
+        // Expected: { refund: <number> }
+        if ((res.status === 200 || res.status === 204) && json && typeof json.refund !== "undefined") {
+          $("refundLabel").textContent = String(json.refund);
+        } else if (json && typeof json.refund !== "undefined") {
+          $("refundLabel").textContent = String(json.refund);
+        }
+      } catch (err) {
+        logOut("cancelOut", `Error: ${err}`);
+      }
+    });
+  </script>
 </body>
 </html>
