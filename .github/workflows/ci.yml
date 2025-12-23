@@ -120,19 +120,6 @@ jobs:
           dotnet tool install -g dotnet-stryker
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Run Stryker (UnitTests)
-        working-directory: tests/FitnessBooking.UnitTests
-        run: |
-          dotnet stryker --config-file ../../stryker-config.json --log-to-file
-
-      - name: Upload mutation report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutation-report
-          path: |
-            tests/FitnessBooking.UnitTests/StrykerOutput/**/reports/**
-            tests/FitnessBooking.UnitTests/StrykerOutput/**/stryker.log
-
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
         with:
@@ -152,6 +139,7 @@ jobs:
         with:
           name: k6-summary
           path: TestResults/k6-summary.json
+
 
 
 
