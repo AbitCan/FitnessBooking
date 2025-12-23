@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "project": "src/FitnessBooking.Application/FitnessBooking.Application.csproj",
+    "project": "../../src/FitnessBooking.Application/FitnessBooking.Application.csproj",
     "test-projects": [
       "tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj"
     ],
