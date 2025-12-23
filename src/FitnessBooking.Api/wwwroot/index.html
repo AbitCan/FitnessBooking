@@ -1,3 +1,9 @@
+<script>
+  if (!localStorage.getItem("fb_token")) {
+    window.location.href = "/login.html";
+  }
+</script>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -181,6 +187,7 @@
           </div>
 
           <pre class="out" id="cancelOut"></pre>
+		  <button class="danger" onclick="localStorage.removeItem('fb_token'); location.href='/login.html';">Logout</button>
         </form>
       </section>
     </div>
@@ -371,9 +378,7 @@
       const path = `/reservations/${encodeURIComponent(id)}`;
 
       try {
-        // Your API currently accepts cancelUtc as parameter? If not, leave it out.
-        // If you DO support it via query string, enable this line:
-        // const pathWithQuery = cancelAtUtc ? `${path}?cancelAtUtc=${encodeURIComponent(cancelAtUtc)}` : path;
+
 
         const { res, json, text, url } = await httpJson("DELETE", path /* or pathWithQuery */);
 
