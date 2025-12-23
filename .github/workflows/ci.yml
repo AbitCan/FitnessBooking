@@ -87,7 +87,8 @@ jobs:
 
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
-
+	with:
+	  k6-version: "1.4.2"
       - name: Run k6 performance test
         run: |
           k6 run \
