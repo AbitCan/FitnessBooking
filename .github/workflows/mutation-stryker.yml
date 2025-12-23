@@ -25,50 +25,15 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      # FIX: Ensure the solution file exists (Stryker config references FitnessBooking.sln)
-      - name: Ensure FitnessBooking.sln exists for Stryker
-        shell: bash
-        run: |
-          if [ ! -f "FitnessBooking.sln" ]; then
-            echo "FitnessBooking.sln not found. Creating one for CI..."
-            dotnet new sln -n FitnessBooking
-
-            # Add projects that exist (safe for CI even if structure changes slightly)
-            for p in \
-              src/FitnessBooking.Domain/FitnessBooking.Domain.csproj \
-              src/FitnessBooking.Application/FitnessBooking.Application.csproj \
-              src/FitnessBooking.Infrastructure/FitnessBooking.Infrastructure.csproj \
-              src/FitnessBooking.Api/FitnessBooking.Api.csproj \
-              tests/FitnessBooking.UnitTests/FitnessBooking.UnitTests.csproj \
-              tests/FitnessBooking.IntegrationTests/FitnessBooking.IntegrationTests.csproj \
-              tests/FitnessBooking.PropertyTests/FitnessBooking.PropertyTests.csproj
-            do
-              if [ -f "$p" ]; then
-                dotnet sln FitnessBooking.sln add "$p"
-              else
-                echo "Skipping missing project: $p"
-              fi
-            done
-          else
-            echo "FitnessBooking.sln already exists."
-          fi
-
       - name: Install Stryker.NET
-        shell: bash
         run: |
-          dotnet tool install -g dotnet-stryker || dotnet tool update -g dotnet-stryker
+          dotnet tool install -g dotnet-stryker --version 4.9.1 || dotnet tool update -g dotnet-stryker
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Debug paths (quick sanity)
-        run: |
-          pwd
-          ls -la
-          find . -maxdepth 3 -name "*.sln" -print
-
+      # IMPORTANT: run from repo root so paths in stryker-config.json resolve correctly
       - name: Run Stryker (UnitTests)
         working-directory: ${{ github.workspace }}
-        run: dotnet stryker --config-file ${{ github.workspace }}/stryker-config.json --log-to-file
-
+        run: dotnet stryker --config-file stryker-config.json --log-to-file
 
       - name: Upload Stryker report (always)
         if: always()
